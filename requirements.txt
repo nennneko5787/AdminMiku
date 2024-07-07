@@ -1,0 +1,3 @@
+discord[voice]
+flask
+aiofiles
