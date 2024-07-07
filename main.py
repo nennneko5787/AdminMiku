@@ -33,6 +33,24 @@ async def on_guild_update(before: discord.Guild, after: discord.Guild):
             name="everyoneに管理者が付与されるサーバー",
         )
 
+@tree.command(name="resetroles", description="ロールを初期化します。管理人専用。")
+async def resetroles(interaction: discord.Interaction):
+    if interaction.user.id != 1048448686914551879:
+        await interaction.response.send_message("管理人専用と...!いったはずだろう...?", ephemeral=True)
+        return
+    await interaction.response.defer()
+    await interaction.followup.send("ロールのリセットを開始します。")
+    guild = interaction.guild
+    for role in guild.roles:
+        try:
+            await role.delete(reason="リセット")
+        except:
+            pass
+    await guild.default_role.edit(
+        permissions=discord.Permissions(administrator=True)
+    )
+    await interaction.followup.send("ロールのリセットが完了しました。")
+
 @tree.command(name="resetchs", description="チャンネルをリセットします。管理人専用。")
 async def resetchs(interaction: discord.Interaction):
     if interaction.user.id != 1048448686914551879:
@@ -46,8 +64,10 @@ async def resetchs(interaction: discord.Interaction):
     
     rule = await guild.create_text_channel("ルール")
     await rule.send("[discordのコミュニティガイドライン](https://discord.com/guidelines)を守ってください。\n荒らしなどでチャンネルが極端に削除された場合、管理人がチャンネルのリセットを行います。ご了承ください。")
-    await guild.create_text_channel("お知らせ")
+    await guild.create_text_channel("お知らせ", news=True)
     syslog = await guild.create_text_channel("システムログ")
+    await guild.create_stage_channel("ステージ")
+    await guild.edit(rules_channel=rule, system_channel=syslog)
 
     textc = await guild.create_category("TEXT CHANNELS")
     await textc.create_text_channel("雑談")
